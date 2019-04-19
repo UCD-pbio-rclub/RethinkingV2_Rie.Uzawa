@@ -1,0 +1,121 @@
+---
+title: "Week3.041519"
+author: "Rie"
+date: "4/15/2019"
+output: html_document
+---
+
+
+```{r Rcode3.1}
+Pr_Positive_Vampire <- 0.95
+Pr_Positive_Mortal <- 0.01
+Pr_Vampire <- 0.001
+Pr_Positive <- Pr_Positive_Vampire * Pr_Vampire + 
+               Pr_Positive_Mortal * ( 1 - Pr_Vampire )
+(Pr_Vampire_Positive <- Pr_Positive_Vampire * Pr_Vampire / Pr_Positive)
+```
+
+
+```{r Rcode3.2}
+p_grid <- seq(from=0, to=1, length.out = 1000)
+prob_p <- rep(1,1000)
+prob_data <- dbinom(6, size = 9, prob = p_grid)
+posterior <- prob_data*prob_p
+posterior <- posterior / sum(posterior)
+```
+
+
+```{r Rcode3.3}
+samples <- sample( p_grid, prob = posterior, size = 1e4, replace = T)
+```
+
+```{r Rcode3.4}
+plot(samples)
+```
+
+```{r Rcode3.5}
+library(rethinking)
+dens( samples)
+```
+
+
+```{r Rcode3.6}
+#add up posterior probability where p<0.5
+sum(posterior[p_grid < 0.5])
+```
+```{r Rcode3.7}
+sum( samples < 0.5 ) / 1e4
+```
+```{r Rcode3.8}
+sum (samples > 0.5 & samples <0.75) / 1e4
+```
+```{r Rcode3.9}
+quantile(samples, 0.8)
+```
+
+```{r Rcode3.10}
+quantile(samples, c(0.1, 0.9))
+```
+```{r Rcode3.11}
+p_grid <- seq(from=0, to=1, length.out = 1000)
+prior <- rep(1, 1000)
+likelihood <-  dbinom(3, size = 3, prob = p_grid)
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+samples <- sample(p_grid, size = 1e4, replace = T, prob = posterior)
+```
+
+```{r Rcode3.12}
+PI( samples , prob = 0.5)
+```
+
+```{r Rcode3.13}
+HPDI( samples, prob = 0.5)
+```
+
+```{r Rcode3.14}
+p_grid[which.max(posterior)]
+```
+```{r Rcode3.15}
+chainmode(samples, adj =0.01)
+```
+```{r Rcode3.16}
+mean(samples)
+median(samples)
+```
+```{r Rcode3.17}
+sum(posterior*abs(0.5-p_grid))
+```
+```{r Rcode3.18}
+loss <- sapply(p_grid, function(d) sum(posterior*abs(d-p_grid)))
+```
+
+```{r Rcode3.19}
+p_grid[which.min(loss)]
+```
+```{r Rcode3.20}
+dbinom(0:2, size = 2, prob = 0.7)
+```
+```{r Rcode3.21}
+rbinom( 1, size = 2, prob = 0.7)
+```
+```{r Rcode3.22}
+rbinom( 10, size = 2, prob = 0.7)
+```
+```{r Rcode3.23}
+dummy_w <- rbinom( 1e5, size = 2, prob = 0.7)
+table(dummy_w)/1e5
+```
+```{r Rcode3.24}
+library(rethinking)
+dummy_w <- rbinom( 1e5, size =9, prob = 0.7)
+simplehist(dummy_w, xlab="dummy water count")
+```
+```{r Rcode3.25}
+w <- rbinom( 1e4, size = 9, prob = 0.6)
+simplehist(w, xlab="water count")
+```
+```{r Rcode3.26}
+w <- rbinom(1e4, size = 9, prob = samples)
+simplehist(w, xlab="water count")
+```
