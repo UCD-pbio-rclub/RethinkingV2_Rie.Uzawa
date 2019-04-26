@@ -25,7 +25,7 @@ prod(1 + runif(12, 0, 0.1))
 ```
 
 ```
-## [1] 1.946883
+## [1] 1.780695
 ```
 
 ```r
@@ -234,9 +234,9 @@ d3
 ```
 
 ```
-##  [1] 151.7650 144.1450 167.0050 162.5600 161.9250 152.7048 148.2852
-##  [8] 142.8750 146.6850 153.6700 142.8750 157.4800 141.6050 158.1150
-## [15] 154.3050 144.7800 160.0200 158.7500 152.4000 151.7650
+##  [1] 152.4000 159.3850 156.8450 160.0200 159.3850 154.9400 149.8600
+##  [8] 152.4000 142.8750 161.9250 149.2250 153.0350 160.6550 149.8600
+## [15] 153.6700 161.2900 158.1150 154.9400 172.9994 168.9100
 ```
 
 ```r
@@ -268,6 +268,8 @@ dens(sample2.sigma, norm.comp = T)
 ![](Week4.042319_files/figure-html/Rcode4.25-1.png)<!-- -->
 
 ```r
+library(rethinking)
+data("Howell1")
 d <- Howell1
 d2 <- d[d$age>=18,]
 head(d2)
@@ -303,9 +305,9 @@ precis(m4.1)
 ```
 
 ```
-##             mean        sd       5.5%      94.5%
-## mu    154.606874 0.4119610 153.948481 155.265267
-## sigma   7.730702 0.2913266   7.265106   8.196298
+##             mean        sd      5.5%     94.5%
+## mu    154.607230 0.4119996 153.94878 155.26569
+## sigma   7.731425 0.2913947   7.26572   8.19713
 ```
 
 
@@ -334,4 +336,154 @@ start <- list(
 )
 m4.1 <- quap(flist, data = d2, start = start)
 ```
+
+
+```r
+m4.2 <- quap(
+  alist(
+    height ~ dnorm(mu, sigma),
+    mu ~ dnorm(178, 0.1),
+    sigma ~ dunif(0, 50)
+  ), data = d2)
+precis(m4.2)
+```
+
+```
+##            mean        sd      5.5%     94.5%
+## mu    177.86376 0.1002354 177.70356 178.02395
+## sigma  24.51771 0.9289372  23.03309  26.00233
+```
+
+```r
+vcov(m4.1)
+```
+
+```
+##                 mu        sigma
+## mu    0.1697396109 0.0002180307
+## sigma 0.0002180307 0.0849058224
+```
+
+
+```r
+diag(vcov(m4.1))
+```
+
+```
+##         mu      sigma 
+## 0.16973961 0.08490582
+```
+
+```r
+cov2cor(vcov(m4.1))
+```
+
+```
+##                mu       sigma
+## mu    1.000000000 0.001816174
+## sigma 0.001816174 1.000000000
+```
+
+
+```r
+library(rethinking)
+post <- extract.samples(m4.1, n=1e4)
+head(post)
+```
+
+```
+##         mu    sigma
+## 1 154.3056 8.264620
+## 2 154.3278 7.360303
+## 3 155.5981 7.889114
+## 4 154.5247 7.610332
+## 5 155.2322 7.772635
+## 6 154.9928 7.192256
+```
+
+```r
+precis(post)
+```
+
+```
+##             mean        sd       5.5%      94.5%     histogram
+## mu    154.610888 0.4199043 153.945165 155.285787      ▁▁▁▅▇▂▁▁
+## sigma   7.729119 0.2888245   7.270071   8.200756 ▁▁▁▁▂▅▇▇▃▁▁▁▁
+```
+
+```r
+plot(post)
+```
+
+![](Week4.042319_files/figure-html/Rcode3.35-1.png)<!-- -->
+
+```r
+library(MASS)
+post <- mvrnorm(n=1e4, mu=coef(m4.1), Sigma = vcov(m4.1))
+head(post)
+```
+
+```
+##            mu    sigma
+## [1,] 154.3858 8.096221
+## [2,] 155.9208 7.663621
+## [3,] 155.0594 8.185843
+## [4,] 154.5974 7.588738
+## [5,] 154.2195 7.952202
+## [6,] 154.7484 7.753974
+```
+
+```r
+plot(d2$height ~d2$weight)
+```
+
+![](Week4.042319_files/figure-html/Rcode4.37-1.png)<!-- -->
+
+
+```r
+set.seed(2971)
+N <- 100 #100 lines
+a <- rnorm(N, 178, 20)
+b <- rnorm(N, 0, 10)
+```
+
+
+```r
+plot(NULL, xlim = range(d2$weight), ylim=c(-100,400),
+     xlab="weight", ylab="height")
+abline(h=0, lty=2)
+abline(h=272, lty=1, lwd=0.5)
+mtext("b~dnorm(0,10)")
+xbar <- mean(d2$weight)
+for (i in 1:N) curve(a[i] +b[i]*(x -xbar),
+    from=min(d2$weight), to=max(d2$weight), add = T ,
+    col=col.alpha("black", 0.2))
+```
+
+![](Week4.042319_files/figure-html/Rcode4.39-1.png)<!-- -->
+
+```r
+b <- rlnorm(1e4, 0, 1)
+dens(b, xlim=c(0,5), adj = 0.1)
+```
+
+![](Week4.042319_files/figure-html/Rcode-1.png)<!-- -->
+
+```r
+N <- 100
+a <- rnorm(N, 178, 20)
+b <- rlnorm(N, 0, 1)
+plot( NULL , xlim=range(d2$weight) , ylim=c(-100,400) , 
+xlab="weight" , ylab="height" )
+abline( h=0 , lty=2 )
+abline( h=272 , lty=1 , lwd=0.5 )
+mtext( "b ~ dnorm(0,10)" )
+xbar <- mean(d2$weight)
+for ( i in 1:N ) curve( a[i] + b[i]*(x - xbar) ,
+from=min(d2$weight) , to=max(d2$weight) , add=TRUE ,
+col=col.alpha("black",0.2) )
+```
+
+![](Week4.042319_files/figure-html/Rcode4.41-1.png)<!-- -->
+
 

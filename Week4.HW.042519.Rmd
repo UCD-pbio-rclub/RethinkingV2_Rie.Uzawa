@@ -24,7 +24,7 @@ y1
 mu = alpha + beta*xi
 
 ###4E5 In the model definition above, how many parameters are in the posterior distribution?
-2, alpha and beta
+3, alpha and beta, sigma
 
 
 

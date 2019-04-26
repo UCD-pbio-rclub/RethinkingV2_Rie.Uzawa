@@ -22,7 +22,7 @@ y1
 mu = alpha + beta*xi
 
 ###4E5 In the model definition above, how many parameters are in the posterior distribution?
-2, alpha and beta
+3, alpha and beta, sigma
 
 
 
@@ -87,7 +87,7 @@ head(sample_mu)
 ```
 
 ```
-## [1] 145.8893 220.4724 184.8767 186.6823 187.7614 214.6270
+## [1] 208.6032 186.2421 137.9937 131.2181 187.7106 162.8900
 ```
 
 ```r
@@ -110,9 +110,9 @@ precis(m4.1)
 ```
 
 ```
-##           mean        sd       5.5%      94.5%
-## mu    154.6070 0.4120036 153.948567 155.265490
-## sigma   7.7315 0.2914018   7.265784   8.197216
+##             mean        sd       5.5%      94.5%
+## mu    154.607023 0.4119947 153.948576 155.265470
+## sigma   7.731333 0.2913860   7.265642   8.197024
 ```
 
 ###4M3 Translate the quap model formula below into a mathematical model definition
