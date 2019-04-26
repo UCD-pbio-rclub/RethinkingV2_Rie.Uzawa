@@ -1,0 +1,63 @@
+---
+title: "Week4 HW"
+author: "Rie"
+date: "4/25/2019"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###4E1 In the model definition below, which line is the likelyhood?
+y1
+
+###4E2 In the model definition just above, how many parameters are in the post distribution?
+2, mu and sigma
+
+###4E3 Using the model definition above, write down the appropriate form of Bayes' theorem include the proper likelihood and priors.
+
+
+###4E4 In the model definition below, which line is the linear model?
+mu = alpha + beta*xi
+
+###4E5 In the model definition above, how many parameters are in the posterior distribution?
+2, alpha and beta
+
+
+
+###4M1 For the model definition below, simulate observed heights from the prior (not the posterior)
+
+```{r HW4M1}
+library(rethinking)
+data("Howell1")
+d <- Howell1
+d2 <- d[d$age>=18,]
+head(d2)
+sample_mu <- rnorm(1e4,178, 20) #1000 samples, average178, sd 20
+head(sample_mu)
+sample_sigma <- runif(1e4, 0, 50)
+prior_h <- rnorm(1e1, sample_mu, sample_sigma)
+dens(prior_h)
+```
+###4M2 Translate the model just above into a quap formula
+```{r HW4M2}
+flist <- alist(
+  height <- dnorm(mu , sigma),
+  mu ~ dnorm(178, 20),
+  sigma ~ dunif(0,50)
+)
+m4.1 <- quap(flist , data=d2)
+precis(m4.1)
+```
+
+###4M3 Translate the quap model formula below into a mathematical model definition
+
+yi ~ Normal(mu, sigma) 
+mu-i = alph + beta*x
+alpha ~ Normal(0, 50)
+beta ~uniform (0, 10)
+sigma ~ uniform(-0, 50)
+
