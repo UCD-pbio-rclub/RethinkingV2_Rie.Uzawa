@@ -348,3 +348,30 @@ m6.12 <- quap(
 precis(m6.12)
 ```
 
+```{r Rcode6.30}
+library(dagitty)
+dag_6.1 <- dagitty("dag {
+  X -> Y <- C
+  X <- U -> B
+  U <- A -> C
+  U -> B <- C
+} ")
+
+adjustmentSets( dag_6.1 , exposure = "X", outcome = "Y")
+```
+```{r Rcode6.31}
+dag_6.2 <- dagitty("dag {
+  S -> A -> D
+  S -> M -> D
+  S -> W -> D
+  A -> M
+} ")
+adjustmentSets(dag_6.2, exposure = "W", outcome = "D")
+
+```
+
+```{r Rcode6.32}
+impliedConditionalIndependencies(dag_6.2)
+
+```
+
