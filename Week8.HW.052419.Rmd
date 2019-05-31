@@ -1,0 +1,241 @@
+---
+title: "Week8.HW.052419"
+author: "Rie"
+date: "5/24/2019"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rethinking)
+library(dagitty)
+```
+
+###6H1. Use the Waffle House data, data(WaffleDivorce), to find the total causal influence of number of Waffle Houses on divorce rate. Justify your model or models with a causal graph.
+
+```{r HW6H1a}
+data("WaffleDivorce")
+d <- WaffleDivorce
+d$WH <- scale(d$WaffleHouses)
+d$D <- scale(d$Divorce)
+
+hw1.a <- quap(
+  alist(
+    WH ~ dnorm(mu, sigma),
+    mu <- a + bD*D, 
+    a ~ dnorm(0, 0.2), 
+    bD ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.a)
+
+```
+
+###Divorce rate is higher in the states where more WHs are located
+
+
+###6H2. Build a series of models to test the implied conditional independencies of the causal graph you used in the previous problem. If any of the tests fail, how do you think the graph needs to be amended? Does the graph need more or fewer arrows? Feel free to nominate variables that aren’t in the data.
+
+```{r HW6H2b}
+
+hw1.south <- quap(
+  alist(
+    D ~ dnorm(mu, sigma),
+    mu <- a + bSouth*South, 
+    a ~ dnorm(0, 0.2), 
+    bSouth ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.south)
+
+```
+
+```{r HW6H2c}
+#south+ waffle house vs divorce
+
+hw1.SW <- quap(
+  alist(
+    D ~ dnorm(mu, sigma),
+    mu <- a + bWH*WH + bSouth*South,
+    a ~ dnorm(0, 0.2), 
+   c(bWH, bSouth) ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.SW)
+```
+###This shows Pipe (south - WH - D)
+
+```{r HW6H2d}
+#age vs divorce, any relationship between age and divorce?
+d$A <- scale(d$MedianAgeMarriage)
+
+hw1.AD <- quap(
+  alist(
+    D ~ dnorm(mu, sigma),
+    mu <- a + bA*A,
+    a ~ dnorm(0, 0.2), 
+    bA ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.AD)
+```
+###Divorce rate is higher in younger people(anticorrelated)
+
+
+```{r HW6H2e}
+# marriage age vs south, any relationship between age and divorce?
+
+hw1.AS <- quap(
+  alist(
+    A ~ dnorm(mu, sigma),
+    mu <- a + bSouth*South,
+    a ~ dnorm(0, 0.2), 
+    bSouth ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.AS)
+```
+###marriage age is younger in south 
+
+```{r HW6H2f}
+#marriage age + south vs divorce 
+
+hw1.ASD <- quap(
+  alist(
+    D ~ dnorm(mu, sigma),
+    mu <- a + bA*A + bSouth*South,
+    a ~ dnorm(0, 0.2), 
+   c(bA, bSouth) ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.ASD)
+```
+
+```{r HW6H2g}
+#age vs marriage rate, any relationship between age and divorce?
+d$M <- scale(d$Marriage)
+
+hw1.AM <- quap(
+  alist(
+    M ~ dnorm(mu, sigma),
+    mu <- a + bA*A,
+    a ~ dnorm(0, 0.2), 
+    bA ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.AM)
+```
+###Marriage rate is higher for older people
+
+```{r HW6H2h}
+# marriage rate vs south, any relationship between age and divorce?
+
+hw1.MS <- quap(
+  alist(
+    M ~ dnorm(mu, sigma),
+    mu <- a + bSouth*South,
+    a ~ dnorm(0, 0.2), 
+    bSouth ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.MS)
+```
+
+```{r HW6H2i}
+#marriage age + south vs divorce 
+
+hw1.ASM <- quap(
+  alist(
+    M ~ dnorm(mu, sigma),
+    mu <- a + bA*A + bSouth*South,
+    a ~ dnorm(0, 0.2), 
+   c(bA, bSouth) ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d
+)
+
+precis(hw1.ASM)
+```
+
+###Collider!!
+###A, S, M are failed in multiregression.
+
+###1. Use a model to infer the total causal influence of area on weight. Would increasing the area available to each fox make it heavier (healthier)? You might want to standardize the variables. Regardless, use prior predictive simulation to show that your model’s prior predictions stay within the possible outcome range.
+
+```{r lecHW1a}
+data("foxes")
+d2 <- foxes
+d2$W <- scale(d2$weight)
+d2$A <- scale(d2$area)
+
+m1.1 <- quap(
+  alist(
+    W ~ dnorm(mu, sigma),
+    mu <- a + bA*A, 
+    a ~ dnorm(0, 0.2), 
+    bA ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d2
+)
+
+precis(m1.1)
+
+```
+
+
+
+###2. Now infer the causal impact of adding food to a territory. Would this make foxes heavier? Which covariates do you need to adjust for to estimate the total causal influence of food?
+
+```{r lecHW2a}
+d2$FD <- scale(d2$avgfood)
+m2.1 <- quap(
+  alist(
+    A ~ dnorm(mu, sigma),
+    mu <- a + bFD*FD, 
+    a ~ dnorm(0, 0.2), 
+    bFD ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d2
+)
+
+precis(m2.1)
+
+```
+
+###No relationship between area and food
+
+###3. Now infer the causal impact of group size. Which covariates do you need to adjust for? Looking at the posterior distribution of the resulting model,what do you think explains these data? That is, can you explain the estimates for all three problems? How do they go together?
+
+```{r lecHW3a}
+d2$GS <- scale(d2$groupsize)
+m3.1 <- quap(
+  alist(
+    W ~ dnorm(mu, sigma),
+    mu <- a + bGS*GS + bFD*FD, 
+    a ~ dnorm(0, 0.2), 
+    c(bGS, bFD) ~ dnorm(0, 0.5), 
+    sigma ~ dexp(1)
+  ), data = d2
+)
+
+precis(m3.1)
+```
+###Group size has anticorrelation with weight whereas food is now correlate with weight.
