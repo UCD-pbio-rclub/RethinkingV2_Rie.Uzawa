@@ -26,7 +26,7 @@ cor(tw[selected], nw[selected])
 ```
 
 ```
-## [1] -0.584554
+## [1] -0.7328733
 ```
 
 ```r
@@ -73,7 +73,7 @@ precis(m6.1)
 plot(precis(m6.1))
 ```
 
-![](Week6.052119_files/figure-html/Rcode6.4-1.png)<!-- -->
+![](Week8.052119_files/figure-html/Rcode6.4-1.png)<!-- -->
 
 
 ```r
@@ -81,7 +81,7 @@ post <- extract.samples(m6.1)
 plot(bl ~ br, post, col=col.alpha(rangi2, 0.1), pch=16)
 ```
 
-![](Week6.052119_files/figure-html/Rcode6.5-1.png)<!-- -->
+![](Week8.052119_files/figure-html/Rcode6.5-1.png)<!-- -->
 
 
 ```r
@@ -89,7 +89,7 @@ sum_blbr <- post$bl+post$br
 dens(sum_blbr, col=rangi2, lwd=2, xlab="sum of bl and br")
 ```
 
-![](Week6.052119_files/figure-html/Rcode6.6-1.png)<!-- -->
+![](Week8.052119_files/figure-html/Rcode6.6-1.png)<!-- -->
 
 
 ```r
@@ -198,7 +198,7 @@ precis(m6.5)
 pairs( ~ kcal.per.g + perc.fat + perc.lactose, data = d, col=rangi2)
 ```
 
-![](Week6.052119_files/figure-html/Rcode6.11-1.png)<!-- -->
+![](Week8.052119_files/figure-html/Rcode6.11-1.png)<!-- -->
 
 
 ```r
@@ -228,7 +228,7 @@ stddev <- sapply(r.seq, function(z) rep.sim.coll(r=z, n=100))
 plot(stddev ~r.seq, type = "l", col=rangi2, lwd=2, xlab="correlation")
 ```
 
-![](Week6.052119_files/figure-html/Rcode6.13-1.png)<!-- -->
+![](Week8.052119_files/figure-html/Rcode6.13-1.png)<!-- -->
 
 
 ```r
@@ -346,7 +346,7 @@ coordinates(plant_dag) <- list(x=c(H0=0, T=2, F=1.5, H1=1),
 plot(plant_dag)
 ```
 
-![](Week6.052119_files/figure-html/Rcode6.19-1.png)<!-- -->
+![](Week8.052119_files/figure-html/Rcode6.19-1.png)<!-- -->
 
 
 ```r
@@ -502,5 +502,50 @@ precis(m6.12)
 ## b_GC  -0.02085976 0.09563463 -0.1737024 0.13198284
 ## b_U    1.96544324 0.16135603  1.7075651 2.22332133
 ## sigma  1.02436055 0.05103796  0.9427920 1.10592907
+```
+
+
+```r
+library(dagitty)
+dag_6.1 <- dagitty("dag {
+  X -> Y <- C
+  X <- U -> B
+  U <- A -> C
+  U -> B <- C
+} ")
+
+adjustmentSets( dag_6.1 , exposure = "X", outcome = "Y")
+```
+
+```
+##  { C }
+##  { A }
+##  { U }
+```
+
+```r
+dag_6.2 <- dagitty("dag {
+  S -> A -> D
+  S -> M -> D
+  S -> W -> D
+  A -> M
+} ")
+adjustmentSets(dag_6.2, exposure = "W", outcome = "D")
+```
+
+```
+##  { A, M }
+##  { S }
+```
+
+
+```r
+impliedConditionalIndependencies(dag_6.2)
+```
+
+```
+## A _||_ W | S
+## D _||_ S | A, M, W
+## M _||_ W | S
 ```
 

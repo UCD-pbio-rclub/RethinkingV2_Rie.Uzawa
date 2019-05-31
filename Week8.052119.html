@@ -208,7 +208,7 @@ s &lt;- nw+tw #total score
 q &lt;- quantile(s, 1-p) #top 10% threshhold
 selected &lt;- ifelse(s &gt;= q, T, F)
 cor(tw[selected], nw[selected])</code></pre>
-<pre><code>## [1] -0.584554</code></pre>
+<pre><code>## [1] -0.7328733</code></pre>
 <pre class="r"><code>N &lt;- 100  # number of indivisuals
 set.seed(909)
 height &lt;- rnorm(N, 10, 2) #sim total height of each, #, mean, sd
@@ -500,6 +500,31 @@ precis(m6.12)</code></pre>
 ## b_GC  -0.02085976 0.09563463 -0.1737024 0.13198284
 ## b_U    1.96544324 0.16135603  1.7075651 2.22332133
 ## sigma  1.02436055 0.05103796  0.9427920 1.10592907</code></pre>
+<pre class="r"><code>library(dagitty)
+dag_6.1 &lt;- dagitty(&quot;dag {
+  X -&gt; Y &lt;- C
+  X &lt;- U -&gt; B
+  U &lt;- A -&gt; C
+  U -&gt; B &lt;- C
+} &quot;)
+
+adjustmentSets( dag_6.1 , exposure = &quot;X&quot;, outcome = &quot;Y&quot;)</code></pre>
+<pre><code>##  { C }
+##  { A }
+##  { U }</code></pre>
+<pre class="r"><code>dag_6.2 &lt;- dagitty(&quot;dag {
+  S -&gt; A -&gt; D
+  S -&gt; M -&gt; D
+  S -&gt; W -&gt; D
+  A -&gt; M
+} &quot;)
+adjustmentSets(dag_6.2, exposure = &quot;W&quot;, outcome = &quot;D&quot;)</code></pre>
+<pre><code>##  { A, M }
+##  { S }</code></pre>
+<pre class="r"><code>impliedConditionalIndependencies(dag_6.2)</code></pre>
+<pre><code>## A _||_ W | S
+## D _||_ S | A, M, W
+## M _||_ W | S</code></pre>
 
 
 
